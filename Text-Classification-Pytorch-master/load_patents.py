@@ -1,0 +1,109 @@
+# _*_ coding: utf-8 _*_
+
+import os
+import sys
+import torch
+from torch.nn import functional as F
+import numpy as np
+from torchtext import datasets
+from torchtext.vocab import Vectors, GloVe
+
+from torchtext.data import Field, LabelField, Dataset, Example, BucketIterator
+import pandas as pd
+import json
+
+class DataFrameDataset(Dataset):
+    """Class for using pandas DataFrames as a datasource"""
+    def __init__(self, examples, fields, filter_pred=None):
+        """
+        Create a dataset from a pandas dataframe of examples and Fields
+        Arguments:
+         examples pd.DataFrame: DataFrame of examples
+         fields {str: Field}: The Fields to use in this tuple. The
+             string is a field name, and the Field is the associated field.
+         filter_pred (callable or None): use only exanples for which
+             filter_pred(example) is true, or use all examples if None.
+             Default is None
+        """
+        self.examples = examples.apply(SeriesExample.fromSeries, args=(fields,), axis=1).tolist()
+        if filter_pred is not None:
+            self.examples = filter(filter_pred, self.examples)
+        self.fields = dict(fields)
+        # Unpack field tuples
+        for n, f in list(self.fields.items()):
+            if isinstance(n, tuple):
+                self.fields.update(zip(n, f))
+                del self.fields[n]
+
+class SeriesExample(Example):
+    """Class to convert a pandas Series to an Example"""
+
+    @classmethod
+    def fromSeries(cls, data, fields):
+        return cls.fromdict(data.to_dict(), fields)
+
+    @classmethod
+    def fromdict(cls, data, fields):
+        ex = cls()
+
+        for key, field in fields.items():
+            if key not in data:
+                raise ValueError("Specified key {} was not found in "
+                "the input data".format(key))
+            if field is not None:
+                setattr(ex, key, field.preprocess(data[key]))
+            else:
+                setattr(ex, key, data[key])
+        return ex
+
+def load_dataset(test_sen=None):
+
+    office_actions = pd.read_csv('../data/office_actions.csv', usecols=['app_id', 'ifw_number', 'rejection_102', 'rejection_103'], nrows=100000)
+
+    abstractList = []
+    idList = []
+    list103 = []
+    for num in range(500):
+
+        app_id = str(office_actions.app_id[num])
+        filename = "../json_files/oa_"+app_id+".json"
+
+        try:
+            jfile = open(filename, 'r')
+        except FileNotFoundError:
+            print("File Not Found")
+            continue
+
+        parsed_json = json.load(jfile)
+        jfile.close()
+
+        abstractList.append(parsed_json[0]['abstract_full'])
+        idList.append(parsed_json[0]['application_number'])
+        list103.append(int(office_actions.rejection_103[num]))
+
+    all_data = {'Abstract': abstractList, 'RejectionType': list103}
+    df = pd.DataFrame(all_data, index = idList)
+
+    tokenize = lambda x: x.split()
+    TEXT = Field(sequential=True, tokenize=tokenize, lower=True, include_lengths=True, batch_first=True, fix_length=200)
+    LABEL = LabelField()
+    fields={'Abstract': TEXT, 'RejectionType': LABEL}
+
+    ds = DataFrameDataset(df, fields)
+
+    TEXT.build_vocab(ds, vectors=GloVe(name='6B', dim=300))
+    LABEL.build_vocab(ds)
+
+    train_data, test_data = ds.split()
+    train_data, valid_data = train_data.split() # Further splitting of training_data to create new training_data & validation_data
+
+    word_embeddings = TEXT.vocab.vectors
+    print ("Length of Text Vocabulary: " + str(len(TEXT.vocab)))
+    print ("Vector size of Text Vocabulary: ", TEXT.vocab.vectors.size())
+    print ("Label Length: " + str(len(LABEL.vocab)))
+
+    train_iter, valid_iter, test_iter = BucketIterator.splits((train_data, valid_data, test_data), batch_size=32, sort_key=lambda x: len(x.text), repeat=False, shuffle=True)
+
+    vocab_size = len(TEXT.vocab)
+
+    return TEXT, vocab_size, word_embeddings, train_iter, valid_iter, test_iter
