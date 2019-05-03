@@ -55,6 +55,16 @@ class SeriesExample(Example):
             else:
                 setattr(ex, key, data[key])
         return ex
+        # for key, tuple in fields.items():
+        #     (name, field) = tuple
+        #     if key not in data:
+        #         raise ValueError("Specified key {} was not found in "
+        #         "the input data".format(key))
+        #     if field is not None:
+        #         setattr(ex, name, field.preprocess(data[key]))
+        #     else:
+        #         setattr(ex, name, data[key])
+        # return ex
 
 def load_dataset(test_sen=None):
 
@@ -81,13 +91,15 @@ def load_dataset(test_sen=None):
         idList.append(parsed_json[0]['application_number'])
         list103.append(int(office_actions.rejection_103[num]))
 
-    all_data = {'Abstract': abstractList, 'RejectionType': list103}
+    all_data = {'text': abstractList, 'label': list103}
     df = pd.DataFrame(all_data, index = idList)
 
     tokenize = lambda x: x.split()
     TEXT = Field(sequential=True, tokenize=tokenize, lower=True, include_lengths=True, batch_first=True, fix_length=200)
-    LABEL = LabelField()
-    fields={'Abstract': TEXT, 'RejectionType': LABEL}
+    LABEL = LabelField(sequential=False)
+    #fields={'Abstract': ('text', TEXT), 'RejectionType': ('labels', LABEL)}
+    fields={'text': TEXT, 'label': LABEL}
+
 
     ds = DataFrameDataset(df, fields)
 
