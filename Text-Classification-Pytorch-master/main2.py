@@ -13,7 +13,7 @@ def clip_gradient(model, clip_value):
     for p in params:
         p.grad.data.clamp_(-clip_value, clip_value)
 
-def train_model(model, train_iter, epoch):
+def train_model(model, train_iter, loss_fn, epoch):
     total_epoch_loss = 0
     total_epoch_acc = 0
     model.cuda()
@@ -47,7 +47,7 @@ def train_model(model, train_iter, epoch):
 
     return total_epoch_loss/len(train_iter), total_epoch_acc/len(train_iter)
 
-def eval_model(model, val_iter):
+def eval_model(model, val_iter, loss_fn):
     total_epoch_loss = 0
     total_epoch_acc = 0
     model.eval()
@@ -97,24 +97,25 @@ def train_and_val(args):
     loss_fn = F.cross_entropy
 
     for epoch in range(10):
-        train_loss, train_acc = train_model(model, train_iter, epoch)
-        val_loss, val_acc = eval_model(model, valid_iter)
+        train_loss, train_acc = train_model(model, train_iter, loss_fn, epoch)
+        val_loss, val_acc = eval_model(model, valid_iter, loss_fn)
 
         print(f'Epoch: {epoch+1:02}, Train Loss: {train_loss:.3f}, Train Acc: {train_acc:.2f}%, Val. Loss: {val_loss:3f}, Val. Acc: {val_acc:.2f}%')
 
-    test_loss, test_acc = eval_model(model, test_iter)
+    test_loss, test_acc = eval_model(model, test_iter, loss_fn)
     print(f'Test Loss: {test_loss:.3f}, Test Acc: {test_acc:.2f}%')
 
 
     ts = time.time()
     timestamp = time.ctime(ts)
 
-    with f as open("./results.out", "w+"):
+    with open("./results.out", "w+") as f:
         f.write(timestamp + '\n')
         f.write(f'Test Loss: {test_loss:.3f}, Test Acc: {test_acc:.2f}%\n')
-        for arg in args:
-            #f.write(arg.name + ':')
-            f.write(str(arg) + ', ')
+        # for arg in args:
+        #     #f.write(arg.name + ':')
+        #     f.write(str(arg) + ', ')
+        f.write("Epochs: " + str(args.epochs))
         f.write("\n")
 
 

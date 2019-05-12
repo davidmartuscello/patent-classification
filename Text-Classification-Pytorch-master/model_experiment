@@ -24,4 +24,4 @@ source ~/project3/torchtext_env/py3.6.3/bin/activate
 
 echo "TESTING"
 
-python main.py
+python train2.py -e 1
