@@ -72,8 +72,8 @@ def load_dataset(test_sen=None):
 
     abstractList = []
     idList = []
-    list103 = []
-    for num in range(500):
+    rejectionColumn = []
+    for num in range(10000):
 
         app_id = str(office_actions.app_id[num])
         filename = "../json_files/oa_"+app_id+".json"
@@ -89,9 +89,25 @@ def load_dataset(test_sen=None):
 
         abstractList.append(parsed_json[0]['abstract_full'])
         idList.append(parsed_json[0]['application_number'])
-        list103.append(int(office_actions.rejection_103[num]))
 
-    all_data = {'text': abstractList, 'label': list103}
+        n = int(office_actions.rejection_102[num])
+        o = int(office_actions.rejection_103[num])
+
+        if n == 0 and o == 0:
+            rejType = 0 #neither
+        elif n == 0 and o == 1:
+            rejType = 1 #obvious
+        elif n == 1 and o == 0:
+            rejType = 2 #novelty
+        elif n == 1 and o == 1:
+            rejType = 3 #both
+        else:
+            print("Office action error:", sys.exc_info()[0])
+            raise
+
+        rejectionColumn.append(rejType)
+
+    all_data = {'text': abstractList, 'label': rejectionColumn}
     df = pd.DataFrame(all_data, index = idList)
 
     tokenize = lambda x: x.split()
