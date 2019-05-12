@@ -87,8 +87,12 @@ def load_dataset(test_sen=None):
         parsed_json = json.load(jfile)
         jfile.close()
 
-        abstractList.append(parsed_json[0]['abstract_full'])
-        idList.append(parsed_json[0]['application_number'])
+        try:
+            abstractList.append(parsed_json[0]['abstract_full'])
+            idList.append(parsed_json[0]['application_number'])
+        except IndexError:
+            print("WARNING: file "+filename+" is empty!\n")
+            continue
 
         n = int(office_actions.rejection_102[num])
         o = int(office_actions.rejection_103[num])

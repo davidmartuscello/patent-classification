@@ -1,6 +1,7 @@
 *.log
 *.out
 *.zip
+out.*
 application_id_snippet.py
 publication_id_snippet.py
 /data/
