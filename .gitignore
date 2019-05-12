@@ -1,0 +1,11 @@
+*.log
+*.out
+*.zip
+application_id_snippet.py
+publication_id_snippet.py
+/data/
+/json_files/
+/.vector_cache
+/.ipynb_checkpoints
+DownloadData.ipynb
+glove.*
