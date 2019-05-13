@@ -102,9 +102,9 @@ def load_dataset(test_sen=None):
         elif n == 0 and o == 1:
             rejType = 1 #obvious
         elif n == 1 and o == 0:
-            rejType = 2 #novelty
+            rejType = 0 #novelty
         elif n == 1 and o == 1:
-            rejType = 3 #both
+            rejType = 1 #both
         else:
             print("Office action error:", sys.exc_info()[0])
             raise

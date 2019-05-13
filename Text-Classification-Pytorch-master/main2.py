@@ -31,7 +31,11 @@ def train_model(model, train_iter, loss_fn, epoch):
             continue
         optim.zero_grad()
         prediction = model(text)
+        print(prediction)
         loss = loss_fn(prediction, target)
+        print(target)
+        print("LOSS:")
+        print(loss)
         num_corrects = (torch.max(prediction, 1)[1].view(target.size()).data == target.data).float().sum()
         acc = 100.0 * num_corrects/len(batch)
         loss.backward()
