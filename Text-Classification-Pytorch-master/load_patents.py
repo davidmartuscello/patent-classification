@@ -66,7 +66,7 @@ class SeriesExample(Example):
         #         setattr(ex, name, data[key])
         # return ex
 
-def load_dataset(test_sen=None):
+def load_dataset(batch_size, test_sen=None):
 
     office_actions = pd.read_csv('../data/office_actions.csv', usecols=['app_id', 'ifw_number', 'rejection_102', 'rejection_103'], nrows=100000)
 
@@ -134,7 +134,7 @@ def load_dataset(test_sen=None):
     print ("Vector size of Text Vocabulary: ", TEXT.vocab.vectors.size())
     print ("Label Length: " + str(len(LABEL.vocab)))
 
-    train_iter, valid_iter, test_iter = BucketIterator.splits((train_data, valid_data, test_data), batch_size=32, sort_key=lambda x: len(x.text), repeat=False, shuffle=True)
+    train_iter, valid_iter, test_iter = BucketIterator.splits((train_data, valid_data, test_data), batch_size=batch_size, sort_key=lambda x: len(x.text), repeat=False, shuffle=True)
 
     vocab_size = len(TEXT.vocab)
 
