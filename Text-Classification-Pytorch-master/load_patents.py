@@ -7,6 +7,7 @@ from torch.nn import functional as F
 import numpy as np
 from torchtext import datasets
 from torchtext.vocab import Vectors, GloVe
+from numpy.random import *
 
 from torchtext.data import Field, LabelField, Dataset, Example, BucketIterator
 import pandas as pd
@@ -87,13 +88,6 @@ def load_dataset(batch_size, test_sen=None):
         parsed_json = json.load(jfile)
         jfile.close()
 
-        try:
-            abstractList.append(parsed_json[0]['abstract_full'])
-            idList.append(parsed_json[0]['application_number'])
-        except IndexError:
-            print("WARNING: file "+filename+" is empty!\n")
-            continue
-
         n = int(office_actions.rejection_102[num])
         o = int(office_actions.rejection_103[num])
 
@@ -108,6 +102,16 @@ def load_dataset(batch_size, test_sen=None):
         else:
             print("Office action error:", sys.exc_info()[0])
             raise
+
+        if rejType == 1 and rand(1) < 0.758:
+            continue
+
+        try:
+            abstractList.append(parsed_json[0]['abstract_full'])
+            idList.append(parsed_json[0]['application_number'])
+        except IndexError:
+            print("WARNING: file "+filename+" is empty!\n")
+            continue
 
         rejectionColumn.append(rejType)
 
