@@ -5,7 +5,7 @@ out.*
 application_id_snippet.py
 publication_id_snippet.py
 /data/
-/json_files/
+/json*
 /.vector_cache
 /.ipynb_checkpoints
 DownloadData.ipynb
