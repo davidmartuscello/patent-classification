@@ -23,7 +23,7 @@ def train_model(model, train_iter, epoch, batch_size, learning_rate):
     total_epoch_loss = 0
     total_epoch_acc = 0
     model.cuda()
-    optim = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),lr=learning_rate)
+    optim = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr = learning_rate)
     steps = 0
     model.train()
     for idx, batch in enumerate(train_iter):
@@ -44,10 +44,6 @@ def train_model(model, train_iter, epoch, batch_size, learning_rate):
         clip_gradient(model, 1e-1)
         optim.step()
         steps += 1
-
-        #if steps % 100 == 0:
-        #    print (f'Epoch: {epoch+1}, Idx: {idx+1}, Training Loss: {loss.item():.4f}, Training Accuracy: {acc.item(): .2f}%')
-
         total_epoch_loss += loss.item()
         total_epoch_acc += acc.item()
 
@@ -84,10 +80,10 @@ def objective(batch_size, hidden_size, learning_rate):
     embedding_length = 300
     weights = word_embeddings
     #model = LSTMClassifier(batch_size, output_size, hidden_size, vocab_size, embedding_length, word_embeddings)
-    #model = AttentionModel(batch_size, output_size, hidden_size, vocab_size, embedding_length, weights)
+    model = AttentionModel(batch_size, output_size, hidden_size, vocab_size, embedding_length, weights)
     #model = RNN(batch_size, output_size, hidden_size, vocab_size, embedding_length, weights)
     #model = RCNN(batch_size, output_size, hidden_size, vocab_size, embedding_length, weights)
-    model = SelfAttention(batch_size, output_size, hidden_size, vocab_size, embedding_length, weights)
+    #model = SelfAttention(batch_size, output_size, hidden_size, vocab_size, embedding_length, weights)
     loss_fn = F.cross_entropy
 
     for epoch in range(10):
@@ -100,42 +96,37 @@ def objective(batch_size, hidden_size, learning_rate):
 
     return test_acc
 
-pbounds = {'batch_size': (32, 64), 'hidden_size': (100, 300), 'learning_rate':(0.001, 0.01)}
+def parameters_tuning():
+    pbounds = {'batch_size': (16, 64), 'hidden_size': (150, 300), 'learning_rate':(0.0001, 0.01)}
+    print("LSTM, 10000, ramdom5, bayes5")
+    optimizer = BayesianOptimization(
+        f=objective,
+        pbounds=pbounds,
+        random_state=1,
+    )
+    optimizer.maximize(
+        init_points=5,
+        n_iter=5,
+    )
+    print(optimizer.max)
 
+def run_best_model(args):
+    learning_rate = args.lr
+    batch_size = args.batch_size
+    hidden_size = args.hidden_size
+    epochs = args.epochs
+    output_size = 2
+    embedding_length = 300
+    TEXT, vocab_size, word_embeddings, train_iter, valid_iter, test_iter = load_patents.load_dataset(batch_size)
+    weights = word_embeddings
+    model = LSTMClassifier(batch_size, output_size, hidden_size, vocab_size, embedding_length, word_embeddings)
+    for epoch in range(epochs):
+        #(model, train_iter, epoch, batch_size, learning_rate)
+        train_loss, train_acc = train_model(model, train_iter, epoch, batch_size, learning_rate)
+        val_loss, val_acc = eval_model(model, valid_iter, batch_size)
 
-optimizer = BayesianOptimization(
-    f=objective,
-    pbounds=pbounds,
-    random_state=1,
-)
+    test_loss, test_acc = eval_model(model, test_iter, batch_size)
+    print("performance of model:")
+    print(f'Test Loss: {test_loss:.3f}, Test Acc: {test_acc:.2f}%')
 
-optimizer.maximize(
-    init_points=15,
-    n_iter=15,
-)
-
-print(optimizer.max)
-'''
-Let us now predict the sentiment on a single sentence just for the testing purpose.
-
-test_sen1 = "This is one of the best creation of Nolan. I can say, it's his magnum opus. Loved the soundtrack and especially those creative dialogues."
-test_sen2 = "Ohh, such a ridiculous movie. Not gonna recommend it to anyone. Complete waste of time and money."
-
-test_sen1 = TEXT.preprocess(test_sen1)
-test_sen1 = [[TEXT.vocab.stoi[x] for x in test_sen1]]
-
-test_sen2 = TEXT.preprocess(test_sen2)
-test_sen2 = [[TEXT.vocab.stoi[x] for x in test_sen2]]
-
-test_sen = np.asarray(test_sen1)
-test_sen = torch.LongTensor(test_sen)
-test_tensor = Variable(test_sen, volatile=True)
-test_tensor = test_tensor.cuda()
-model.eval()
-output = model(test_tensor, 1)
-out = F.softmax(output, 1)
-if (torch.argmax(out[0]) == 1):
-    print ("Sentiment: Positive")
-else:
-    print ("Sentiment: Negative")
-'''
+parameters_tuning()
