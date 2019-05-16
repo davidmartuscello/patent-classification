@@ -113,7 +113,7 @@ def parameters_tuning():
 def run_best_model(args):
     learning_rate = args.lr
     batch_size = args.batch_size
-    hidden_size = args.hidden_sie
+    hidden_size = args.hidden_size
     epochs = args.epochs
     output_size = 2
     embedding_length = 300
