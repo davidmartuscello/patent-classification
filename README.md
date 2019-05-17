@@ -12,7 +12,7 @@ This repository acts as a proof of concept for patent application classification
   * pip install bayesian-optimization
   * python main.py
 
-#### To Run on NYU HPC Cluster
+#### To Run on NYU HPC Cluster:
 1) create virtual environment at ~/project3/torchtext_env/
 2) install required program
-2) run: sbatch model_experiment
+2) run: "sbatch model_experiments"
