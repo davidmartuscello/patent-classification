@@ -34,3 +34,6 @@ This repository acts as a proof of concept for patent application classification
 	Then you will see a file params-tuning.job_id containing the best hyper-parameters
 	* Get a best model to predict: change the command in run_best_model with the best hyper-parameters you just got and run:
 	`sbatch run_best_model`
+
+## Other
+The `Check_json_files` python notebook captures the population counts of the various classes inside the data. The `office_actions.csv` file has to be kept in the same folder as the script but the json files need to be present in another folder called `json_files_1` in the parent of the current directory.
