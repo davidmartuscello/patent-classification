@@ -75,7 +75,7 @@ def eval_model(model, val_iter, batch_size):
 def objective(batch_size, hidden_size, learning_rate):
     batch_size = int(batch_size)
     hidden_size = int(hidden_size)
-    TEXT, vocab_size, word_embeddings, train_iter, valid_iter, test_iter = load_patents.load_dataset(batch_size)
+    TEXT, vocab_size, word_embeddings, train_iter, valid_iter, test_iter = load_patents.load_dataset(batch_size, )
     output_size = 2
     embedding_length = 300
     weights = word_embeddings
@@ -98,7 +98,7 @@ def objective(batch_size, hidden_size, learning_rate):
 
 def parameters_tuning():
     pbounds = {'batch_size': (16, 64), 'hidden_size': (150, 300), 'learning_rate':(0.0001, 0.01)}
-    print("LSTM, 10000, ramdom5, bayes5")
+    print("LSTM, 10000, random5, bayes5")
     optimizer = BayesianOptimization(
         f=objective,
         pbounds=pbounds,
@@ -115,9 +115,10 @@ def run_best_model(args):
     batch_size = args.batch_size
     hidden_size = args.hidden_size
     epochs = args.epochs
+    cache_data = args.cache_data
     output_size = 2
     embedding_length = 300
-    TEXT, vocab_size, word_embeddings, train_iter, valid_iter, test_iter = load_patents.load_dataset(batch_size)
+    TEXT, vocab_size, word_embeddings, train_iter, valid_iter, test_iter = load_patents.load_dataset(batch_size, cache_data=cache_data)
     weights = word_embeddings
     model = LSTMClassifier(batch_size, output_size, hidden_size, vocab_size, embedding_length, word_embeddings)
     for epoch in range(epochs):
