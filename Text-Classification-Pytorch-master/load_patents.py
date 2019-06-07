@@ -7,7 +7,7 @@ from torch.nn import functional as F
 import numpy as np
 from torchtext import datasets
 from torchtext.vocab import Vectors, GloVe
-from numpy.random import *
+from numpy.random import rand
 
 from torchtext.data import Field, LabelField, Dataset, Example, BucketIterator
 import pandas as pd
@@ -67,64 +67,115 @@ class SeriesExample(Example):
         #         setattr(ex, name, data[key])
         # return ex
 
-def load_dataset(batch_size, test_sen=None):
+def load_dataset(batch_size, cache_data=False, test_sen=None):
 
-    office_actions = pd.read_csv('../data/office_actions.csv', usecols=['app_id', 'ifw_number', 'rejection_102', 'rejection_103'], nrows=100000)
+    if cache_data:
+        office_actions = pd.read_csv('../data/office_actions.csv',
+            index_col='app_id',
+            usecols=['app_id', 'rejection_102', 'rejection_103'],
+            dtype={'app_id':int, 'rejection_102': int, 'rejection_103': int},
+            nrows=200000)
 
-    abstractList = []
-    idList = []
-    rejectionColumn = []
-    for num in range(10000):
+        abstractList = []
+        idList = []
+        rejectionColumn = []
+        obviousCount = 0
+        notCount = 0
+        path = "/scratch/dm4350/json_files/"
+        count = 0
 
-        app_id = str(office_actions.app_id[num])
-        filename = "../json_files/oa_"+app_id+".json"
+        for filename in os.listdir(path):
 
-        try:
-            jfile = open(filename, 'r')
-        except FileNotFoundError:
-            print("File Not Found")
-            continue
+            if count % 1000 == 0:
+                print(count)
 
-        parsed_json = json.load(jfile)
-        jfile.close()
+            filepath = path + filename
+            try:
+                jfile = open(filepath, 'r')
+            except FileNotFoundError:
+                print("File Not Found")
+                continue
 
-        n = int(office_actions.rejection_102[num])
-        o = int(office_actions.rejection_103[num])
+            try:
+                parsed_json = json.load(jfile)
+                jfile.close()
+            except UnicodeDecodeError:
+                print("WARNING: UnicodeDecodeError")
+                continue
+            except json.decoder.JSONDecodeError:
+                print("WARNING: JSONDecodeError")
+                continue
 
-        if n == 0 and o == 0:
-            rejType = 0 #neither
-        elif n == 0 and o == 1:
-            rejType = 1 #obvious
-        elif n == 1 and o == 0:
-            rejType = 0 #novelty
-        elif n == 1 and o == 1:
-            rejType = 1 #both
-        else:
-            print("Office action error:", sys.exc_info()[0])
-            raise
+            app_id = int(filename.replace("oa_", "").replace(".json", "").replace("(1)", ""))
+            try:
+                row  = office_actions.loc[app_id]
+            except KeyError:
+                print("WARNING: KeyError")
+                continue
 
-        if rejType == 1 and rand(1) < 0.758:
-            continue
+            try:
+                n = int(row.rejection_102)
+                o = int(row.rejection_103)
+            except TypeError:
+                n = int(row.rejection_102.iloc[0])
+                o = int(row.rejection_103.iloc[0])
 
-        try:
-            abstractList.append(parsed_json[0]['abstract_full'])
-            idList.append(parsed_json[0]['application_number'])
-        except IndexError:
-            print("WARNING: file "+filename+" is empty!\n")
-            continue
 
-        rejectionColumn.append(rejType)
+            if n == 0 and o == 0:
+                rejType = 0 #neither
+            elif n == 0 and o == 1:
+                rejType = 1 #obvious
+            elif n == 1 and o == 0:
+                rejType = 0 #novelty
+            elif n == 1 and o == 1:
+                rejType = 1 #both
+            else:
+                print("Office actions dataframe error:", sys.exc_info()[0])
+                raise
 
-    all_data = {'text': abstractList, 'label': rejectionColumn}
-    df = pd.DataFrame(all_data, index = idList)
+            if obviousCount >= notCount and rejType == 1:
+                continue
+
+            obviousCount += o
+            notCount += not(o)
+
+            try:
+                a = parsed_json[0]['abstract_full']
+                i = parsed_json[0]['application_number']
+            except IndexError:
+                print("WARNING: file "+filepath+" is empty!\n")
+                continue
+            except KeyError:
+                print("WARNING: file "+filepath+" is empty!\n")
+                continue
+
+            abstractList.append(a)
+            idList.append(i)
+            rejectionColumn.append(rejType)
+
+            count += 1
+            if count > 100: break
+
+        df = pd.DataFrame({'text':abstractList, 'label':rejectionColumn}, index = idList)
+
+        df.to_pickle('./data_cache/abstracts_df.pkl')
+        # with open("data_cache/TEXT.Field","wb")as f:
+        #     dill.dump(TEXT,f)
+        # with open("data_cache/LABEL.Field","wb")as f:
+        #     dill.dump(LABEL,f)
+
+    else:
+        df = pd.read_pickle('./data_cache/abstracts_df.pkl')
+        # with open("data_cache/TEXT.Field","rb")as f:
+        #     TEXT=dill.load(f)
+        # with open("data_cache/LABEL.Field","rb")as f:
+        #     LABEL=dill.load(f)
 
     tokenize = lambda x: x.split()
     TEXT = Field(sequential=True, tokenize=tokenize, lower=True, include_lengths=True, batch_first=True, fix_length=200)
     LABEL = LabelField(sequential=False)
-    #fields={'Abstract': ('text', TEXT), 'RejectionType': ('labels', LABEL)}
+
     fields={'text': TEXT, 'label': LABEL}
-
-
     ds = DataFrameDataset(df, fields)
 
     TEXT.build_vocab(ds, vectors=GloVe(name='6B', dim=300))
@@ -132,7 +183,6 @@ def load_dataset(batch_size, test_sen=None):
 
     train_data, test_data = ds.split()
     train_data, valid_data = train_data.split() # Further splitting of training_data to create new training_data & validation_data
-
     word_embeddings = TEXT.vocab.vectors
     print ("Length of Text Vocabulary: " + str(len(TEXT.vocab)))
     print ("Vector size of Text Vocabulary: ", TEXT.vocab.vectors.size())
