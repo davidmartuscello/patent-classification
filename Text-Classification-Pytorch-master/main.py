@@ -75,12 +75,12 @@ def eval_model(model, val_iter, batch_size):
 def objective(batch_size, hidden_size, learning_rate):
     batch_size = int(batch_size)
     hidden_size = int(hidden_size)
-    TEXT, vocab_size, word_embeddings, train_iter, valid_iter, test_iter = load_patents.load_dataset(batch_size, )
+    TEXT, vocab_size, word_embeddings, train_iter, valid_iter, test_iter = load_patents.load_dataset(batch_size, cache_data=False)
     output_size = 2
     embedding_length = 300
     weights = word_embeddings
-    #model = LSTMClassifier(batch_size, output_size, hidden_size, vocab_size, embedding_length, word_embeddings)
-    model = AttentionModel(batch_size, output_size, hidden_size, vocab_size, embedding_length, weights)
+    model = LSTMClassifier(batch_size, output_size, hidden_size, vocab_size, embedding_length, word_embeddings)
+    #model = AttentionModel(batch_size, output_size, hidden_size, vocab_size, embedding_length, weights)
     #model = RNN(batch_size, output_size, hidden_size, vocab_size, embedding_length, weights)
     #model = RCNN(batch_size, output_size, hidden_size, vocab_size, embedding_length, weights)
     #model = SelfAttention(batch_size, output_size, hidden_size, vocab_size, embedding_length, weights)
@@ -111,6 +111,8 @@ def parameters_tuning():
     print(optimizer.max)
 
 def run_best_model(args):
+    print('Aok')
+
     learning_rate = args.lr
     batch_size = args.batch_size
     hidden_size = args.hidden_size
@@ -118,10 +120,14 @@ def run_best_model(args):
     cache_data = args.cache_data
     output_size = 2
     embedding_length = 300
+    print('Called')
     TEXT, vocab_size, word_embeddings, train_iter, valid_iter, test_iter = load_patents.load_dataset(batch_size, cache_data=cache_data)
     weights = word_embeddings
+    print('Loaded Dataset')
     model = LSTMClassifier(batch_size, output_size, hidden_size, vocab_size, embedding_length, word_embeddings)
+    print('Loaded Model')
     for epoch in range(epochs):
+        print('EPOCH')
         #(model, train_iter, epoch, batch_size, learning_rate)
         train_loss, train_acc = train_model(model, train_iter, epoch, batch_size, learning_rate)
         val_loss, val_acc = eval_model(model, valid_iter, batch_size)
@@ -130,4 +136,5 @@ def run_best_model(args):
     print("performance of model:")
     print(f'Test Loss: {test_loss:.3f}, Test Acc: {test_acc:.2f}%')
 
-parameters_tuning()
+
+#parameters_tuning()

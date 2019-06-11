@@ -15,4 +15,4 @@ This repository acts as a proof of concept for patent application classification
 #### To Run on NYU HPC Cluster:
 1) create virtual environment at ~/project3/torchtext_env/
 2) install required program
-2) run: "sbatch model_experiments"
+3) run: "sbatch model_experiments"

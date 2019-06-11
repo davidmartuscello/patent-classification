@@ -69,6 +69,8 @@ class SeriesExample(Example):
 
 def load_dataset(batch_size, cache_data=False, test_sen=None):
 
+    print('Loading Dataset')
+    print(cache_data)
     if cache_data:
         office_actions = pd.read_csv('../data/office_actions.csv',
             index_col='app_id',
@@ -154,7 +156,7 @@ def load_dataset(batch_size, cache_data=False, test_sen=None):
             rejectionColumn.append(rejType)
 
             count += 1
-            if count > 100: break
+            if count > 5: break
 
         df = pd.DataFrame({'text':abstractList, 'label':rejectionColumn}, index = idList)
 
