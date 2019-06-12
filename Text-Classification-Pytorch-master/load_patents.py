@@ -67,7 +67,7 @@ class SeriesExample(Example):
         #         setattr(ex, name, data[key])
         # return ex
 
-def load_dataset(batch_size, cache_data=False, test_sen=None):
+def load_dataset(batch_size, cache_data=True, test_sen=None):
 
     print('Loading Dataset')
     print(cache_data)
@@ -156,7 +156,7 @@ def load_dataset(batch_size, cache_data=False, test_sen=None):
             rejectionColumn.append(rejType)
 
             count += 1
-            if count > 5: break
+            if count > 2000: break
 
         df = pd.DataFrame({'text':abstractList, 'label':rejectionColumn}, index = idList)
 

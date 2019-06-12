@@ -136,5 +136,4 @@ def run_best_model(args):
     print("performance of model:")
     print(f'Test Loss: {test_loss:.3f}, Test Acc: {test_acc:.2f}%')
 
-
 #parameters_tuning()
