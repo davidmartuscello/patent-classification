@@ -10,3 +10,7 @@ publication_id_snippet.py
 /.ipynb_checkpoints
 DownloadData.ipynb
 glove.*
+/__pycache__
+/models/__pycache__
+/data_cache/
+params-tuning.*
