@@ -69,9 +69,8 @@ class SeriesExample(Example):
 
 def load_dataset(batch_size, cache_data=True, test_sen=None):
 
-    print('Loading Dataset')
-    print(cache_data)
     if cache_data:
+        print("Caching Data")
         office_actions = pd.read_csv('../data/office_actions.csv',
             index_col='app_id',
             usecols=['app_id', 'rejection_102', 'rejection_103'],
@@ -156,7 +155,7 @@ def load_dataset(batch_size, cache_data=True, test_sen=None):
             rejectionColumn.append(rejType)
 
             count += 1
-            if count > 2000: break
+            #if count > 2000: break
 
         df = pd.DataFrame({'text':abstractList, 'label':rejectionColumn}, index = idList)
 
@@ -167,6 +166,7 @@ def load_dataset(batch_size, cache_data=True, test_sen=None):
         #     dill.dump(LABEL,f)
 
     else:
+        print('Loading Dataset from Cache')
         df = pd.read_pickle('./data_cache/abstracts_df.pkl')
         # with open("data_cache/TEXT.Field","rb")as f:
         #     TEXT=dill.load(f)

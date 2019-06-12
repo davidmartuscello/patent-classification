@@ -111,8 +111,6 @@ def parameters_tuning():
     print(optimizer.max)
 
 def run_best_model(args):
-    print('Aok')
-
     learning_rate = args.lr
     batch_size = args.batch_size
     hidden_size = args.hidden_size
@@ -120,12 +118,9 @@ def run_best_model(args):
     cache_data = args.cache_data
     output_size = 2
     embedding_length = 300
-    print('Called')
     TEXT, vocab_size, word_embeddings, train_iter, valid_iter, test_iter = load_patents.load_dataset(batch_size, cache_data=cache_data)
     weights = word_embeddings
-    print('Loaded Dataset')
     model = LSTMClassifier(batch_size, output_size, hidden_size, vocab_size, embedding_length, word_embeddings)
-    print('Loaded Model')
     for epoch in range(epochs):
         print('EPOCH')
         #(model, train_iter, epoch, batch_size, learning_rate)
