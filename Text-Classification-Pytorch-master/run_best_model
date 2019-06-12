@@ -3,4 +3,4 @@
 module load python3/intel/3.6.3 cuda/9.0.176 nccl/cuda9.0/2.4.2
 source ~/project3/torchtext_env/py3.6.3/bin/activate
 pip install bayesian-optimization
-python train2.py -e 2 -l 0.00037 -b 25 -hi 275 -c True
+python train2.py -e 2 -l 0.00037 -b 25 -hi 275 -c False
