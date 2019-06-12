@@ -124,7 +124,7 @@ def run_best_model(args):
     model = LSTMClassifier(batch_size, output_size, hidden_size, vocab_size, embedding_length, word_embeddings)
 
     acc_list = []
-    val_acc = []
+    val_list = []
     for epoch in range(epochs):
         #(model, train_iter, epoch, batch_size, learning_rate)
         train_loss, train_acc = train_model(model, train_iter, epoch, batch_size, learning_rate)
