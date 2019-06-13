@@ -131,7 +131,7 @@ def run_best_model(args):
         #(model, train_iter, epoch, batch_size, learning_rate)
         train_loss, train_acc = train_model(model, train_iter, epoch, batch_size, learning_rate)
         val_loss, val_acc = eval_model(model, valid_iter, batch_size)
-        print(f'EPOCH {epoch} -- Train Loss: {train_loss:.3f}, Train Acc: {train_acc:.2f}%')
+        print(f'EPOCH {epoch} -- Train/Val Loss: {train_loss:.3f}/{val_loss:.3f}, Train/Val Acc: {train_acc:.2f}%/{val_acc:.2f}%')
         acc_list.append(train_acc)
         val_list.append(val_acc)
 
