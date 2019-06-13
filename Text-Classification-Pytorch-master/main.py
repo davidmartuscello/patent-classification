@@ -1,4 +1,6 @@
-
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 import os
 import time
 import load_patents
@@ -13,7 +15,7 @@ from models.LSTM_Attn import AttentionModel
 from models.RCNN import RCNN
 from models.RNN import RNN
 from bayes_opt import BayesianOptimization
-import matplotlib.pyplot as plt
+
 
 def clip_gradient(model, clip_value):
     params = list(filter(lambda p: p.grad is not None, model.parameters()))
