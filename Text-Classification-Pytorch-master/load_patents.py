@@ -140,6 +140,15 @@ def load_dataset(batch_size, cache_data=True, test_sen=None):
             obviousCount += o
             notCount += not(o)
 
+            # Skip any files not in the appropriate IPC class
+            try:
+                if "A61C" not in parsed_json[0]['ipc_classes']:
+                    continue
+            except:
+                print("WARNING: file "+filepath+" is empty!\n")
+                continue
+
+            # Read in data from json file if it exists
             try:
                 a = parsed_json[0]['abstract_full']
                 i = parsed_json[0]['application_number']
@@ -150,6 +159,7 @@ def load_dataset(batch_size, cache_data=True, test_sen=None):
                 print("WARNING: file "+filepath+" is empty!\n")
                 continue
 
+
             abstractList.append(a)
             idList.append(i)
             rejectionColumn.append(rejType)
@@ -158,8 +168,9 @@ def load_dataset(batch_size, cache_data=True, test_sen=None):
             #if count > 2000: break
 
         df = pd.DataFrame({'text':abstractList, 'label':rejectionColumn}, index = idList)
+        print("{} files loaded".format(count))
 
-        df.to_pickle('./data_cache/abstracts_df.pkl')
+        df.to_pickle('./data_cache/abstracts_df_A61C.pkl')
         # with open("data_cache/TEXT.Field","wb")as f:
         #     dill.dump(TEXT,f)
         # with open("data_cache/LABEL.Field","wb")as f:
@@ -167,7 +178,7 @@ def load_dataset(batch_size, cache_data=True, test_sen=None):
 
     else:
         print('Loading Dataset from Cache')
-        df = pd.read_pickle('./data_cache/abstracts_df.pkl')
+        df = pd.read_pickle('./data_cache/abstracts_df_A61C.pkl')
         # with open("data_cache/TEXT.Field","rb")as f:
         #     TEXT=dill.load(f)
         # with open("data_cache/LABEL.Field","rb")as f:
