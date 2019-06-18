@@ -142,9 +142,11 @@ def load_dataset(batch_size, cache_data=True, test_sen=None):
 
             # Skip any files not in the appropriate IPC class
             try:
+                found_A61 = False
                 for s in parsed_json[0]['ipc_classes']:
                     if (s.find("A61") != -1):
-                        break
+                        found_A61 = True
+                if not found_A61:
                     continue
             except:
                 print("WARNING: file "+filepath+" is empty!\n")
