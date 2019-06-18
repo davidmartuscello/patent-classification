@@ -142,7 +142,9 @@ def load_dataset(batch_size, cache_data=True, test_sen=None):
 
             # Skip any files not in the appropriate IPC class
             try:
-                if "A61C" not in parsed_json[0]['ipc_classes']:
+                for s in parsed_json[0]['ipc_classes']:
+                    if (s.find("A61") != -1):
+                        break
                     continue
             except:
                 print("WARNING: file "+filepath+" is empty!\n")
@@ -170,7 +172,7 @@ def load_dataset(batch_size, cache_data=True, test_sen=None):
         df = pd.DataFrame({'text':abstractList, 'label':rejectionColumn}, index = idList)
         print("{} files loaded".format(count))
 
-        df.to_pickle('./data_cache/abstracts_df_A61C.pkl')
+        df.to_pickle('./data_cache/abstracts_df_A61.pkl')
         # with open("data_cache/TEXT.Field","wb")as f:
         #     dill.dump(TEXT,f)
         # with open("data_cache/LABEL.Field","wb")as f:
@@ -178,7 +180,7 @@ def load_dataset(batch_size, cache_data=True, test_sen=None):
 
     else:
         print('Loading Dataset from Cache')
-        df = pd.read_pickle('./data_cache/abstracts_df_A61C.pkl')
+        df = pd.read_pickle('./data_cache/abstracts_df_A61.pkl')
         # with open("data_cache/TEXT.Field","rb")as f:
         #     TEXT=dill.load(f)
         # with open("data_cache/LABEL.Field","rb")as f:
